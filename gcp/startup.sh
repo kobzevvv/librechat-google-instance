@@ -58,9 +58,45 @@ if [ -n "$DOMAIN" ]; then
   cat > /etc/caddy/Caddyfile <<CADDY
 ${DOMAIN} {
   reverse_proxy 127.0.0.1:${APP_PORT}
+  log {
+    output file /var/log/caddy/access.log
+    format json
+  }
 }
 CADDY
   systemctl restart caddy || true
+
+  # Install and configure Google Cloud Ops Agent to ship logs to Cloud Logging
+  if ! dpkg -s google-cloud-ops-agent >/dev/null 2>&1; then
+    curl -sS https://dl.google.com/cloudagents/add-google-cloud-ops-agent-repo.sh | bash || true
+    apt-get install -y google-cloud-ops-agent || true
+  fi
+
+  mkdir -p /opt/librechat/logs || true
+  cat > /etc/google-cloud-ops-agent/config.yaml <<'OPS'
+logging:
+  receivers:
+    docker:
+      type: filelog
+      include_paths:
+        - /var/lib/docker/containers/*/*.log
+      record_log_file_path: true
+    librechat_files:
+      type: filelog
+      include_paths:
+        - /opt/librechat/logs/**/*.log
+      record_log_file_path: true
+    caddy_access:
+      type: filelog
+      include_paths:
+        - /var/log/caddy/*.log
+      record_log_file_path: true
+  service:
+    pipelines:
+      default_pipeline:
+        receivers: [docker, librechat_files, caddy_access]
+OPS
+  systemctl restart google-cloud-ops-agent || true
 fi
 
 echo "Startup completed for domain='${DOMAIN}' port=${APP_PORT}" 

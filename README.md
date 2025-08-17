@@ -14,7 +14,7 @@ This repository deploys a production-ready LibreChat instance (API + UI) fronted
 
 ## Deploying
 
-### Option A: Local (single host)
+### Option A (optional): Local troubleshooting
 1. Create and fill `.env` (you can start from the example below):
    ```bash
    cp .env.example .env || true
@@ -33,9 +33,9 @@ This repository deploys a production-ready LibreChat instance (API + UI) fronted
    docker compose up -d
    ```
 
-3. Open the UI: `http://localhost:3080`
+3. Open the UI (local troubleshooting): `http://localhost:3080`
 
-### Option B: GCP (fully automated VM with Caddy + TLS)
+### Option B (standard): GCP (Compute Engine VMs + Caddy + TLS)
 Prereqs: `gcloud` CLI authenticated, a GCP project, and DNS control for your domain.
 
 1. Set environment and run deploy script:
@@ -177,6 +177,22 @@ Prereqs: `gcloud` CLI authenticated, a GCP project, and DNS control for your dom
 - `docker-compose.yml` binds project `.env` into `/app/.env` inside the API container and maps `${PORT}:${PORT}`.
 - MCP SSE endpoint in this repo: `https://hiring-router-mcp-680223933889.europe-west1.run.app/mcp/sse`.
 
+### Full configuration reference
+- See `docs/configuration.md` for a complete list of environment variables and guidance.
+- Use `config/settings.example.yaml` as a human-friendly template when planning values.
+
+### Open (no-auth) mode
+Set these in your environment (or in `docker-compose.override.yml` under `services.api.environment`):
+
+```
+ALLOW_EMAIL_LOGIN=false
+ALLOW_REGISTRATION=false
+ALLOW_SOCIAL_LOGIN=false
+ALLOW_SOCIAL_REGISTRATION=false
+```
+
+Restart the stack afterward.
+
 ## Security posture (temporary)
 - Open access by URL. When ready, add one of:
   - Simple server-side bearer check
@@ -205,3 +221,22 @@ curl -I https://chat.recruiter-assistant.com | head -n1
 # Recreate only the API service
 docker compose up -d --force-recreate --no-deps api
 ```
+
+## Deployment guide
+- Standard deployment targets GCP with public domains.
+- Production URL: https://chat.recruiter-assistant.com
+- See `docs/deployment.md` for step-by-step instructions (DNS, deploy script, operations).
+
+## Domain and environments (summary)
+- This repo does not hardcode any domain. Domains are supplied only during cloud deployments.
+- Environments:
+  - Production: `chat.recruiter-assistant.com` → VM `librechat-prod` → Caddy → `127.0.0.1:3080` (API/UI)
+  - Development: `test-chat.recruiter-assistant.com` → VM `librechat-dev` → Caddy → `127.0.0.1:3081`
+  - Local troubleshooting: no domain; use `http://localhost:3080`
+- Where the domain is set:
+  - `gcp/deploy.sh` takes `PROD_DOMAIN` and `DEV_DOMAIN` and passes each to the VM as metadata.
+  - On the VM, `gcp/startup.sh` writes `/etc/caddy/Caddyfile` with `reverse_proxy 127.0.0.1:${APP_PORT}` for the given `${DOMAIN}` and restarts Caddy.
+  - DNS A records must point to the static IPs printed by `gcp/deploy.sh`.
+- Verification:
+  - On VM: `curl -sSI http://127.0.0.1:${PORT}` → `HTTP/1.1 200 OK`
+  - Public: `curl -I https://<domain>` → `HTTP/2 200`

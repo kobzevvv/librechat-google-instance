@@ -5,6 +5,10 @@ services:
       CREDS_IV: ${CREDS_IV}
       JWT_SECRET: ${JWT_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      ALLOW_EMAIL_LOGIN: "false"
+      ALLOW_REGISTRATION: "false"
+      ALLOW_SOCIAL_LOGIN: "false"
+      ALLOW_SOCIAL_REGISTRATION: "false"
     volumes:
       - ./librechat.yaml:/app/librechat.yaml
       - ./logs:/app/logs

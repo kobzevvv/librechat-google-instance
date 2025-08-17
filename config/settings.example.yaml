@@ -1,0 +1,30 @@
+# Copy to config/settings.yaml and customize. Values here mirror .env keys.
+
+port: 3080
+mcpInstanceUrl: "https://your-mcp.run.app/mcp"
+
+secrets:
+  credsKey: ""        # 64 hex chars
+  credsIv: ""         # 32 hex chars
+  jwtSecret: ""
+  jwtRefreshSecret: ""
+  meiliMasterKey: ""
+
+auth:
+  allowEmailLogin: true
+  allowRegistration: true
+  allowSocialLogin: false
+  allowSocialRegistration: false
+
+rag:
+  port: 8000
+
+vectordb:
+  postgresDb: "librechat"
+  postgresUser: "librechat"
+  postgresPassword: "change-me"
+
+# Note: This YAML is a reference template; the stack reads env vars.
+# Populate .env or docker-compose.override.yml accordingly.
+
+
