@@ -1,0 +1,33 @@
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Node / package caches
+node_modules/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+
+# Data directories (databases, search indexes, uploads)
+data-node/
+meili_data_v1.12/
+uploads/
+
+# Certificates and keys
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Misc
+*.pid
+*.seed
+

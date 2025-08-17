@@ -1,0 +1,12 @@
+services:
+  api:
+    environment:
+      CREDS_KEY: ${CREDS_KEY}
+      CREDS_IV: ${CREDS_IV}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+    volumes:
+      - ./librechat.yaml:/app/librechat.yaml
+      - ./logs:/app/logs
+
+
