@@ -1,0 +1,38 @@
+# Canonical deployment configuration (documentation/source of truth)
+# This file is not consumed by scripts directly; it documents the current setup.
+
+version: 1
+
+gcp:
+  projectId: qalearn
+  region: europe-west1
+  zone: europe-west1-b
+
+repository:
+  url: https://github.com/vova-ru/librechat-google-instance.git
+
+mcp:
+  instanceUrl: https://hiring-router-mcp-680223933889.europe-west1.run.app/mcp
+
+environments:
+  prod:
+    instanceName: librechat-prod
+    domain: chat.recruiter-assistant.com
+    staticIp: 34.38.129.97
+    appPort: 3080
+    caddy:
+      upstream: 127.0.0.1:3080
+  dev:
+    instanceName: librechat-dev
+    domain: test-chat.recruiter-assistant.com
+    staticIp: 35.205.196.77
+    appPort: 3081
+    caddy:
+      upstream: 127.0.0.1:3081
+
+notes:
+  - DNS: A records must point to the static IPs above.
+  - Caddy: VMs are configured to proxy ${domain} → 127.0.0.1:${appPort}.
+  - Scripts: gcp/deploy.sh reads environment variables at runtime; this YAML is for documentation.
+
+

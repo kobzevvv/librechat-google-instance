@@ -1,3 +1,54 @@
+## Configuration Reference
+
+This document lists the key environment variables and configuration files used by this deployment.
+
+### Core environment variables (API container)
+- `PORT` (default: 3080) — Port the API/UI listens on. Must be set because compose maps `${PORT}:${PORT}`.
+- `JWT_SECRET` — Required. Long random string.
+- `JWT_REFRESH_SECRET` — Required. Long random string.
+- `CREDS_KEY` — Required. 64 hex chars (32 bytes). Use `openssl rand -hex 32`.
+- `CREDS_IV` — Required. 32 hex chars (16 bytes). Use `openssl rand -hex 16`.
+- `MONGO_URI` — Defaults to `mongodb://mongodb:27017/LibreChat` via compose.
+- `MEILI_HOST` — Defaults to `http://meilisearch:7700` via compose.
+- `MEILI_MASTER_KEY` — Required for Meilisearch access. Keep stable across restarts.
+- `RAG_API_URL` — Defaults to `http://rag_api:${RAG_PORT}`.
+- `RAG_PORT` — Defaults to 8000.
+
+### Vector DB (pgvector)
+- `POSTGRES_DB` — Required.
+- `POSTGRES_USER` — Required.
+- `POSTGRES_PASSWORD` — Required; choose a strong value.
+
+### Optional login flags (for closed deployments)
+- `ALLOW_EMAIL_LOGIN`, `ALLOW_REGISTRATION`, `ALLOW_SOCIAL_LOGIN`, `ALLOW_SOCIAL_REGISTRATION`
+  - Set to `false` to keep the instance closed for public signups/logins.
+
+### Files and mounts
+- `.env` (project root) — Bind-mounted into API container as `/app/.env`.
+- `docker-compose.override.yml` — Adds `environment:` for `JWT_*` and `CREDS_*`, mounts `librechat.yaml`.
+- `librechat.yaml` — Custom configuration loaded by the app. This repo sets the MCP SSE endpoint.
+- Volumes:
+  - `/opt/librechat/images` → `/app/client/public/images`
+  - `/opt/librechat/uploads` → `/app/uploads`
+  - `/opt/librechat/logs` → `/app/api/logs`
+  - `/opt/librechat/meili_data_v1.12` → `/meili_data`
+
+### MCP configuration
+In `librechat.yaml`:
+```yaml
+version: "1.2.8"
+mcpServers:
+  hiring-router:
+    type: sse
+    url: https://hiring-router-mcp-680223933889.europe-west1.run.app/mcp/sse
+```
+To disable temporarily, remove the `mcpServers` section and restart the API.
+
+### Security notes
+- Treat `.env` as sensitive. Avoid committing secrets.
+- Consider adding Cloudflare Access or GCP IAP in front of your domain.
+- If you require per-user tokens for MCP, add an `Authorization` header in `librechat.yaml` and wire a user-variable.
+
 ### Configuration reference
 
 This repo deploys a LibreChat instance via Docker. Configure it primarily through environment variables. For convenience, see `config/settings.example.yaml` for a human-friendly template you can copy from.

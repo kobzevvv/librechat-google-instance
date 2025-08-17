@@ -1,29 +1,41 @@
-# Copy to config/settings.yaml and customize. Values here mirror .env keys.
+# Example human-readable settings template for planning deployments
 
-port: 3080
-mcpInstanceUrl: "https://your-mcp.run.app/mcp"
+app:
+  port: 3080
+  domain: your-domain.example.com
 
-secrets:
-  credsKey: ""        # 64 hex chars
-  credsIv: ""         # 32 hex chars
-  jwtSecret: ""
-  jwtRefreshSecret: ""
-  meiliMasterKey: ""
+security:
+  jwtSecret: "<long-random>"
+  jwtRefreshSecret: "<long-random>"
+  credsKey: "<64-hex>"      # openssl rand -hex 32
+  credsIv: "<32-hex>"       # openssl rand -hex 16
 
+datastores:
+  mongoUri: mongodb://mongodb:27017/LibreChat
+  meili:
+    host: http://meilisearch:7700
+    masterKey: "<long-random>"
+  postgres:
+    db: librechat
+    user: librechat
+    password: "<strong-password>"
+
+rag:
+  url: http://rag_api:8000
+
+mcp:
+  hiringRouter:
+    type: sse
+    url: https://hiring-router-mcp-680223933889.europe-west1.run.app/mcp/sse
+
+# Optional auth flags
 auth:
   allowEmailLogin: true
   allowRegistration: true
   allowSocialLogin: false
   allowSocialRegistration: false
 
-rag:
-  port: 8000
-
-vectordb:
-  postgresDb: "librechat"
-  postgresUser: "librechat"
-  postgresPassword: "change-me"
-
+# Copy to config/settings.yaml and customize. Values here mirror .env keys.
 # Note: This YAML is a reference template; the stack reads env vars.
 # Populate .env or docker-compose.override.yml accordingly.
 
